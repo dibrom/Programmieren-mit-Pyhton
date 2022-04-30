@@ -12,7 +12,7 @@ CREATE TABLE traindata (
  `X (Test Funktion)` float,
  `Y1 (Test Funktion)` float,
  `Delta Y (Abweichung)` float,
- `Nummer der idealen Funktion` float);
+ `Nummer der idealen Funktion` char(100));
  
  
  CREATE TABLE idealdata (
