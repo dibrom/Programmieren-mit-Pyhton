@@ -7,6 +7,7 @@
 import numpy as np
 import pandas as pd
 import sys
+
 from bokeh.plotting import figure, output_file, show
 from bokeh.models import ColumnDataSource
 from bokeh.models.tools import HoverTool
@@ -59,7 +60,7 @@ class Value_functions():
 # In[3]:
 
 
-class Read_Dataframe():
+class Read_dataframe():
     def read_csv_to_dataframe(filepath):
         """
         This function gets a filepath and trys to read a csv file to pandas dataframe 
@@ -100,9 +101,8 @@ class Fitting_function():
         output arguments:
         - ideal_function_train: number which defines the fitting function of the ideal dataset
         """
-        counter = range(1,len(ideal_dataframe.columns),1)
         train_ideal_df = pd.DataFrame({'X (Test Funktion)':np.arange(-20,20,0.1)})
-        for i in counter:
+        for i in range(1,len(ideal_dataframe.columns),1):
             train_ideal_df[str(i)] = 0.0
         for i in range(0,len(ideal_dataframe),1):
             for j in counter:
@@ -123,7 +123,7 @@ class Fitting_Function_ideal(Fitting_function):
     None
 
 
-# In[9]:
+# In[ ]:
 
 
 class Visualize_data():
@@ -145,12 +145,11 @@ class Visualize_data():
         - none - direct output for further computing but a bokeh graph
         """
         train_ideal_function_plot = figure()
-        train_ideal_function_plot.circle(x="X",y="Y" + str(train_function) +" (Training Funktion)",                                    source = train_dataframe, size = 5, color='green', legend_label="Train Y" + str(train_function))
-        train_ideal_function_plot.circle(x="X (Test Funktion)",y="Y" + ideal_function_train + " (Ideale Funktion)",                                    source = ideal_dataframe, size = 1, color='blue', legend_label="Ideal Y" + ideal_function_train)
-        train_ideal_function_plot.title.text = "Train Data Y" + str(train_function) + " - ideal Data Y" + ideal_function_train
+        train_ideal_function_plot.circle(x="X",y="Y" + str(train_function) +" (Training Funktion)",                                    source = train_dataframe, size = 5, color='green', legend_label="Train Y" +                                          str(train_function))
+        train_ideal_function_plot.circle(x="X (Test Funktion)",y="Y" + ideal_function_train + " (Ideale Funktion)",                                    source = ideal_dataframe, size = 1, color='blue', legend_label="Ideal Y" +                                          ideal_function_train)
+        train_ideal_function_plot.title.text = "Train Data Y" + str(train_function) + " - ideal Data Y" +         ideal_function_train
         train_ideal_function_plot.xaxis.axis_label = "x"
         train_ideal_function_plot.yaxis.axis_label = "y"
-        #output_notebook()
         show(train_ideal_function_plot)
         
     def vis_train_ideal_in_nb(train_dataframe, ideal_dataframe, train_function, ideal_function_train):
@@ -178,4 +177,10 @@ class Visualize_data():
         train_ideal_function_plot.yaxis.axis_label = "y"
         output_notebook()
         show(train_ideal_function_plot)
+
+
+# In[ ]:
+
+
+
 

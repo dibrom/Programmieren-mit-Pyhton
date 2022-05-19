@@ -1,28 +1,27 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[4]:
 
 
 import unittest
+import pandas as pd
 #  Import other ipynb files
 import import_ipynb
 import functions as fn
-import pandas as pd
 
 
-# In[2]:
+# In[5]:
 
 
-class TestFunctions(unittest.TestCase):
+class Test_functions(unittest.TestCase):
 
     # Test class for unittests in functions.ipynb
     # unittest for quaderror function
-    get_ipython().run_line_magic('tb', '')
+    #%tb
     def test_quad_error(self):
         result = fn.Value_functions.quad_error(2,4)
         self.assertEqual(result, 4, "Der quadratische Fehler muss 4 betragen")
-        
         
     def test_euclidean_distance(self):
         result = fn.Value_functions.euclidean_distance(0,1,0,4)
@@ -34,4 +33,10 @@ class TestFunctions(unittest.TestCase):
         
 if __name__ == '__main__':
     unittest.main(argv=['first-arg-is-ignored'], exit=False)
+
+
+# In[ ]:
+
+
+
 

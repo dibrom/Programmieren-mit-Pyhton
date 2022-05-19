@@ -10,7 +10,6 @@ from sqlalchemy import inspect
 from sqlalchemy.orm import sessionmaker
 
 import os
-import sys
 
 # pandas for data handling
 import pandas as pd
@@ -30,6 +29,7 @@ from bokeh.layouts import gridplot
 # Import other ipynb files
 import import_ipynb
 import functions as fn
+from functions import Fitting_Function_ideal
 
 
 # In[2]:
@@ -47,9 +47,6 @@ engine = db.create_engine(con_str,                           #echo = True
 # create database connection
 connection = engine.connect()
 
-# create metadata object
-meta_data = db.MetaData()
-
 
 # In[3]:
 
@@ -65,7 +62,7 @@ print(insp.get_table_names())
 
 
 # Load train data to dataframe
-train_df = fn.Read_Dataframe.read_csv_to_dataframe('train.csv')
+train_df = fn.Read_Dataframe.read_csv_to_dataframe('datasets/train.csv')
 #train_df
 
 
@@ -81,7 +78,7 @@ train_df = train_df.rename(columns={"x": "X", "y1": "Y1 (Training Funktion)", "y
 # In[6]:
 
 
-# write test data from df to table
+# write train data from df to table
 train_df.to_sql(
     'traindata',
     con=connection,
@@ -109,7 +106,7 @@ counter = range(1,51,1)
 
 
 # Load ideal data to dataframe
-ideal_df = fn.Read_Dataframe.read_csv_to_dataframe('ideal.csv')
+ideal_df = fn.Read_Dataframe.read_csv_to_dataframe('datasets/ideal.csv')
 
 
 # In[9]:
@@ -124,7 +121,7 @@ ideal_df.head()
 
 
 # rename columns of ideal_df to match db column names
-ideal_df = ideal_df.rename(columns={"x": "X"+" (Test Funktion)"})    
+ideal_df = ideal_df.rename(columns={"x": "X (Test Funktion)"})    
 for i in counter:
     ideal_df = ideal_df.rename(columns={"y"+str(i): "Y"+str(i)+" (Ideale Funktion)"})        
 #ideal_df.head()
@@ -160,9 +157,26 @@ ideal_df.to_sql(
 
 # ### Visualizing data
 
-# #### Ideal data
+# ####  Train data
 
 # In[13]:
+
+
+# Plotting train data by using bokeh scatter plot and pandas datafragem
+train_plot = figure()
+train_plot.circle(x="X",y="Y1 (Training Funktion)", source = train_df, size = 3, color='green', legend_label="y1")
+train_plot.circle(x="X",y="Y2 (Training Funktion)", source = train_df, size = 3, color='blue', legend_label="y2")
+train_plot.circle(x="X",y="Y3 (Training Funktion)", source = train_df, size = 3, color='yellow', legend_label="y3")
+train_plot.circle(x="X",y="Y4 (Training Funktion)", source = train_df, size = 3, color='red', legend_label="y4")
+train_plot.title.text = "Train data"
+train_plot.xaxis.axis_label = "x"
+train_plot.yaxis.axis_label = "y"
+show(train_plot)
+
+
+# #### Ideal data
+
+# In[14]:
 
 
 # Plotting ideal data by using bokeh scatter plot and pandas datafragem
@@ -177,23 +191,6 @@ for i in counter:
     figure_list.append(ideal_plot)
 grid = gridplot(figure_list, ncols=5,width=250, height=250)
 show(grid)
-
-
-# ####  Train data
-
-# In[29]:
-
-
-# Plotting train data by using bokeh scatter plot and pandas datafragem
-train_plot = figure()
-train_plot.circle(x="X",y="Y1 (Training Funktion)", source = train_df, size = 3, color='green', legend_label="y1")
-train_plot.circle(x="X",y="Y2 (Training Funktion)", source = train_df, size = 3, color='blue', legend_label="y2")
-train_plot.circle(x="X",y="Y3 (Training Funktion)", source = train_df, size = 3, color='yellow', legend_label="y3")
-train_plot.circle(x="X",y="Y4 (Training Funktion)", source = train_df, size = 3, color='red', legend_label="y4")
-train_plot.title.text = "Train data"
-train_plot.xaxis.axis_label = "x"
-train_plot.yaxis.axis_label = "y"
-show(train_plot)
 
 
 # ### Check ideal function for train data function y1
@@ -258,7 +255,7 @@ fn.Visualize_data.vis_train_ideal(train_df, ideal_df, 4, ideal_function_train_y4
 
 
 # Load test data to dataframe
-test_df = fn.Read_Dataframe.read_csv_to_dataframe('test.csv')
+test_df = fn.Read_Dataframe.read_csv_to_dataframe('datasets/test.csv')
 test_df.sort_values(by = ["x"], ascending=True,                                     inplace=True, ignore_index=True)
 
 
@@ -266,13 +263,12 @@ test_df.sort_values(by = ["x"], ascending=True,                                 
 
 
 # Add columns to test_df and rename columns x and y
-test_df["Delta Y (Abweichung)"] = 0 #np.NaN
-test_df["Nummer der idealen Funktion"] = "No ideal function found" #np.NaN
 test_df = test_df.rename(columns={"x": "X (Test Funktion)", "y": "Y1 (Test Funktion)"})
-test_df
+test_df["Delta Y (Abweichung)"] = 0
+test_df["Nummer der idealen Funktion"] = "No ideal function found"
 
 
-# In[30]:
+# In[25]:
 
 
 # Visualizing data
@@ -311,15 +307,39 @@ for i in range(0,len(test_df),1):
         if test_x == ideal_x:
             for k in range(1,len(ideal_fitting_df.columns),1):
                 ideal_y = ideal_fitting_df.iloc[j,k]
-                delta = abs(test_y - ideal_y)
-                if delta < (2**(1/2)):
-                    if funct_numb == "No ideal function found" or delta < y_delta:
+                delta = test_y - ideal_y
+                delta_abs = abs(test_y - ideal_y)
+                if delta_abs < (2**(1/2)):
+                    if funct_numb == "No ideal function found" or delta_abs < abs(y_delta):
                         y_delta = delta
                         test_df.iat[i,2] = delta
                         test_df.iat[i,3] = ideal_fitting_headers[k]
 
 
 # In[28]:
+
+
+# Create new dataset for visualization
+test_df_vis = test_df[["X (Test Funktion)"
+                             ,"Y1 (Test Funktion)"
+                             ,"Delta Y (Abweichung)"]].copy()
+test_df_vis["Y1 (Test Funktion) + Delta"] = test_df_vis["Y1 (Test Funktion)"] + test_df_vis["Delta Y (Abweichung)"]
+
+
+# In[29]:
+
+
+# Visualize test data and found ideal points from ideal functions
+test_delta_plot = figure()
+test_delta_plot.circle(x="X (Test Funktion)",y="Y1 (Test Funktion)", source = test_df_vis,                        size = 6, color='black', legend_label="Y1 (Test Funktion)")
+test_delta_plot.circle(x="X (Test Funktion)",y="Y1 (Test Funktion) + Delta", source = test_df_vis,                        size = 3, color='red', legend_label="Y1 + Delta")
+test_delta_plot.title.text = "Test data and test data + delta"
+test_delta_plot.xaxis.axis_label = "x"
+test_delta_plot.yaxis.axis_label = "y"
+show(test_delta_plot)
+
+
+# In[30]:
 
 
 # write test data from df to table
